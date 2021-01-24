@@ -119,7 +119,7 @@ RSpec.describe RuboCop::Cop::Style::EvalWithLocation do
         do_something
       CODE
     RUBY
-    
+
     expect_correction(<<~RUBY)
       C.class_eval <<-CODE, __FILE__, __LINE__ + 1
         do_something

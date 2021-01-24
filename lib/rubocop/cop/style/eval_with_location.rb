@@ -68,9 +68,9 @@ module RuboCop
           if line
             check_file(node, file)
             check_line(node, code)
-	  elsif file
+          elsif file
             check_file(node, file)
-	    add_offense_for_missing_line(node, code)
+            add_offense_for_missing_line(node, code)
           else
             if node.method?(:eval) && !with_binding?(node)
               add_offense(node)
@@ -78,12 +78,12 @@ module RuboCop
             end
 
             add_offense(node) do |corrector|
-#	      return if node.method?(:eval) && !with_binding?(node)
+              #	      return if node.method?(:eval) && !with_binding?(node)
 
-	      line_diff = line_difference(node.arguments.last, code)
-	      sign = line_diff.positive? ? :+ : :-
-	      line_str = line_diff.zero? ? '__LINE__' : "__LINE__ #{sign} #{line_diff.abs}"
-              corrector.insert_after(node.loc.expression.end, ', __FILE__, ' + line_str)
+              line_diff = line_difference(node.arguments.last, code)
+              sign = line_diff.positive? ? :+ : :-
+              line_str = line_diff.zero? ? '__LINE__' : "__LINE__ #{sign} #{line_diff.abs}"
+              corrector.insert_after(node.loc.expression.end, ", __FILE__, #{line_str}")
             end
           end
         end
@@ -103,14 +103,14 @@ module RuboCop
         def file_and_line(node)
           base = node.method?(:eval) ? 2 : 1
           [node.arguments[base], node.arguments[base + 1]]
-	end
+        end
 
-	def with_binding?(node)
+        def with_binding?(node)
           if node.method?(:eval)
             node.arguments.size >= 2
-	  else
+          else
             true
-	  end
+          end
         end
 
         # FIXME: It's a Style/ConditionalAssignment's false positive.
@@ -144,7 +144,7 @@ module RuboCop
 
           add_offense(file_node, message: message) do |corrector|
             corrector.replace(file_node, '__FILE__')
-	  end
+          end
         end
 
         def check_line(node, code)
@@ -159,7 +159,7 @@ module RuboCop
 
         def line_difference(line_node, code)
           string_first_line(code) - line_node.loc.expression.first_line
-	end
+        end
 
         def string_first_line(str_node)
           if str_node.heredoc?
@@ -176,7 +176,7 @@ module RuboCop
             line_node.loc.expression,
             message: message_incorrect_line(line_node, nil, 0)
           ) do |corrector|
-	    corrector.replace(line_node, '__LINE__')
+            corrector.replace(line_node, '__LINE__')
           end
         end
 
@@ -188,15 +188,15 @@ module RuboCop
             line_node.loc.expression,
             message: message_incorrect_line(line_node, sign, line_diff.abs)
           ) do |corrector|
-		  corrector.replace(line_node, "__LINE__ #{sign} #{line_diff.abs}")
+            corrector.replace(line_node, "__LINE__ #{sign} #{line_diff.abs}")
           end
         end
 
-	def add_offense_for_missing_line(node, code)
+        def add_offense_for_missing_line(node, code)
           add_offense(node) do |corrector|
-	    line_diff = line_difference(node.arguments.last, code)
-	    sign = line_diff.positive? ? :+ : :-
-	    line_str = line_diff.zero? ? '__LINE__' : "__LINE__ #{sign} #{line_diff.abs}"
+            line_diff = line_difference(node.arguments.last, code)
+            sign = line_diff.positive? ? :+ : :-
+            line_str = line_diff.zero? ? '__LINE__' : "__LINE__ #{sign} #{line_diff.abs}"
             corrector.insert_after(node.loc.expression.end, ", #{line_str}")
           end
         end
