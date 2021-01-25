@@ -72,19 +72,7 @@ module RuboCop
             check_file(node, file)
             add_offense_for_missing_line(node, code)
           else
-            if node.method?(:eval) && !with_binding?(node)
-              add_offense(node)
-              return
-            end
-
-            add_offense(node) do |corrector|
-              #	      return if node.method?(:eval) && !with_binding?(node)
-
-              line_diff = line_difference(node.arguments.last, code)
-              sign = line_diff.positive? ? :+ : :-
-              line_str = line_diff.zero? ? '__LINE__' : "__LINE__ #{sign} #{line_diff.abs}"
-              corrector.insert_after(node.loc.expression.end, ", __FILE__, #{line_str}")
-            end
+            add_offense_for_missing_location(node, code)
           end
         end
 
@@ -198,6 +186,20 @@ module RuboCop
             sign = line_diff.positive? ? :+ : :-
             line_str = line_diff.zero? ? '__LINE__' : "__LINE__ #{sign} #{line_diff.abs}"
             corrector.insert_after(node.loc.expression.end, ", #{line_str}")
+          end
+        end
+
+        def add_offense_for_missing_location(node, code)
+          if node.method?(:eval) && !with_binding?(node)
+            add_offense(node)
+            return
+          end
+
+          add_offense(node) do |corrector|
+            line_diff = line_difference(node.arguments.last, code)
+            sign = line_diff.positive? ? :+ : :-
+            line_str = line_diff.zero? ? '__LINE__' : "__LINE__ #{sign} #{line_diff.abs}"
+            corrector.insert_after(node.loc.expression.end, ", __FILE__, #{line_str}")
           end
         end
       end
