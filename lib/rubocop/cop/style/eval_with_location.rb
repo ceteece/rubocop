@@ -108,15 +108,6 @@ module RuboCop
         end
         # rubocop:enable Style/ConditionalAssignment
 
-        def add_offense_for_incorrect_line(line_node, sign, line_diff)
-          expected = expected_line(sign, line_diff)
-          message = format(MSG_INCORRECT_LINE, actual: line_node.source, expected: expected)
-
-          add_offense(line_node.loc.expression, message: message) do |corrector|
-            corrector.replace(line_node, expected)
-          end
-        end
-
         def check_file(node, file_node)
           return true if special_file_keyword?(file_node)
 
@@ -165,6 +156,23 @@ module RuboCop
           add_offense_for_incorrect_line(line_node, sign, line_diff)
         end
 
+        def add_offense_for_incorrect_line(line_node, sign, line_diff)
+          expected = expected_line(sign, line_diff)
+          message = format(MSG_INCORRECT_LINE, actual: line_node.source, expected: expected)
+
+          add_offense(line_node.loc.expression, message: message) do |corrector|
+            corrector.replace(line_node, expected)
+          end
+        end
+
+        def expected_line(sign, line_diff)
+          if line_diff.zero?
+            '__LINE__'
+          else
+            "__LINE__ #{sign} #{line_diff.abs}"
+          end
+        end
+
         def add_offense_for_missing_line(node, code)
           add_offense(node) do |corrector|
             line_diff = line_difference(node.arguments.last, code)
@@ -185,14 +193,6 @@ module RuboCop
             sign = line_diff.positive? ? :+ : :-
             line_str = expected_line(sign, line_diff)
             corrector.insert_after(node.loc.expression.end, ", __FILE__, #{line_str}")
-          end
-        end
-
-        def expected_line(sign, line_diff)
-          if line_diff.zero?
-            '__LINE__'
-          else
-            "__LINE__ #{sign} #{line_diff.abs}"
           end
         end
       end
