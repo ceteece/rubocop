@@ -94,11 +94,7 @@ module RuboCop
         end
 
         def with_binding?(node)
-          if node.method?(:eval)
-            node.arguments.size >= 2
-          else
-            true
-          end
+          node.method?(:eval) ? node.arguments.size >= 2 : true
         end
 
         # FIXME: It's a Style/ConditionalAssignment's false positive.
